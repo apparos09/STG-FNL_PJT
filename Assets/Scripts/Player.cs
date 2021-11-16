@@ -24,7 +24,7 @@ public class Player : MonoBehaviour
     [Header("Movement")]
 
     // movement force
-    public float moveSpeed = 675.0F;
+    public Vector2 moveSpeedXZ = new Vector2(1200.0F, 1200.0F);
 
     // maximum speed.
     public float maxMoveSpeed = 250.0F;
@@ -33,7 +33,13 @@ public class Player : MonoBehaviour
     public bool limitMoveSpeed = true;
 
     // the turn speed for the player.
-    public float turnSpeed = 90.0F;
+    public Vector2 turnSpeedXY = new Vector2(90.0F, 90.0F);
+
+    // the force for jumping.
+    public float jumpForce = 500.0F;
+
+    // becomes 'true' if the player is in water.
+    public bool inWater = false;
 
     // Start is called before the first frame update
     void Start()
@@ -96,18 +102,45 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // MOVEMENT //
         // move forward or backwards
-        if (Input.GetAxisRaw("Vertical") != 0)
-            rigidBody.AddForce(transform.forward * Input.GetAxisRaw("Vertical") * moveSpeed * Time.deltaTime);
+        if (Input.GetAxisRaw("Movement Z") != 0.0F)
+            rigidBody.AddForce(transform.forward * Input.GetAxisRaw("Movement Z") * moveSpeedXZ.y * Time.deltaTime);
 
-        // rotation/movement force.
-        if(Input.GetAxisRaw("Horizontal") != 0)
+        // move left or right
+        if (Input.GetAxisRaw("Movement X") != 0.0F)
+            rigidBody.AddForce(transform.right * Input.GetAxisRaw("Movement X") * moveSpeedXZ.x * Time.deltaTime);
+
+        // ROTATION //
+        // rotation/movement force (left and right)
+        if (Input.GetAxisRaw("Rotation Y") != 0.0F)
         {
-            transform.Rotate(transform.up, Input.GetAxisRaw("Horizontal") * turnSpeed * Time.deltaTime);
+            transform.Rotate(transform.up, Input.GetAxisRaw("Rotation Y") * turnSpeedXY.y * Time.deltaTime);
         }
 
+        // TODO: rotate camera, not whole body.
+        // rotation/movement force (look up and down)
+        // if (Input.GetAxisRaw("Rotation X") != 0.0F)
+        // {
+        //     transform.Rotate(transform.right, Input.GetAxisRaw("Rotation X") * turnSpeedXY.x * Time.deltaTime);
+        // }
+
+        // JUMP //
+        // TODO: only have this work underwater
+        if(inWater)
+        {
+            if (Input.GetAxisRaw("Jump") != 0.0F)
+                rigidBody.AddForce(transform.up * Input.GetAxisRaw("Jump") * jumpForce * Time.deltaTime, ForceMode.Impulse);
+        }
+        else
+        {
+            if (Input.GetKeyDown("space"))
+                rigidBody.AddForce(transform.up * jumpForce * Time.deltaTime, ForceMode.Impulse);
+        }
+
+
         // if hte movement should be limited.
-        if(limitMoveSpeed)
+        if (limitMoveSpeed)
         {
             // gets the current speed.
             float currSpeed = rigidBody.velocity.magnitude;
