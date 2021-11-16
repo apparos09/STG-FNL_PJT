@@ -758,7 +758,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.09853762, y: -0.000000004280661, z: 4.238689e-10, w: 0.99513334}
+  m_LocalRotation: {x: 0.098537624, y: 0.0000000042806607, z: -4.238689e-10, w: 0.99513334}
   m_LocalPosition: {x: 0, y: 3.5, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -930,11 +930,11 @@ MonoBehaviour:
   firstPersonCamera: {fileID: 0}
   thirdPersonCamera: {fileID: 0}
   startInFirstPerson: 0
-  moveSpeedXZ: {x: 900, y: 900}
+  moveSpeedXZ: {x: 1200, y: 1200}
   maxMoveSpeed: 250
   limitMoveSpeed: 1
   turnSpeedXY: {x: 90, y: 90}
-  jumpForce: 100
+  jumpForce: 500
   inWater: 0
 --- !u!54 &1194044297
 Rigidbody:
@@ -1140,7 +1140,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2031773793}
-  m_LocalRotation: {x: 0.09853762, y: -0.000000004280661, z: 4.238689e-10, w: 0.99513334}
+  m_LocalRotation: {x: 0.098537624, y: 0.0000000042806607, z: -4.238689e-10, w: 0.99513334}
   m_LocalPosition: {x: 0, y: 3.5, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
