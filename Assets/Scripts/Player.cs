@@ -36,10 +36,17 @@ public class Player : MonoBehaviour
     public Vector2 turnSpeedXY = new Vector2(90.0F, 90.0F);
 
     // the force for jumping.
-    public float jumpForce = 500.0F;
+    public float jumpForce = 450.0F;
 
     // becomes 'true' if the player is in water.
     public bool inWater = false;
+
+    // changes mass if leaving water.
+    public float InAirDrag = 0.0F;
+    public float InWaterDrag = 1.5F;
+
+    // becomes 'true' if the player hits the ground.
+    public bool onGround = false;
 
     // Start is called before the first frame update
     void Start()
@@ -47,6 +54,9 @@ public class Player : MonoBehaviour
         // grabs the rigidbody if it's not set.
         if (rigidBody == null)
             rigidBody = FindObjectOfType<Rigidbody>();
+
+        InAirDrag = rigidBody.drag;
+        InWaterDrag = (rigidBody.drag + 1) * InWaterDrag; // does a plus one to account for a drag of 0. 
 
         // if third person camera not set.
         if(thirdPersonCamera == null)
@@ -69,6 +79,65 @@ public class Player : MonoBehaviour
         }
 
 
+    }
+
+    // checks for collision
+    private void OnCollisionStay(Collision collision)
+    {
+        // checks if on the ground
+        if(!onGround && (collision.gameObject.tag == "Stage" || collision.gameObject.tag == "Untagged"))
+        {
+            Ray downRay = new Ray(transform.position, -transform.up);
+            RaycastHit hitInfo;
+
+            // checks if standing on surface.
+            bool rayHit = collision.collider.Raycast(downRay, out hitInfo, 1.0F);
+
+            // if standing on the ground, then set this to true.
+            onGround = rayHit;
+        }
+    }
+
+    // on exiting a collider
+    private void OnCollisionExit(Collision collision)
+    {
+        // checs if the player has left the ground
+        if (onGround && (collision.gameObject.tag == "Stage" || collision.gameObject.tag == "Untagged"))
+            onGround = false;
+    }
+
+
+    // enter water
+    private void OnTriggerEnter(Collider other)
+    {
+        // if entered water
+        if (other.gameObject.tag == "Water")
+        {
+            inWater = true;
+            rigidBody.drag = InWaterDrag;
+        }
+    }
+
+    // entered water.
+    private void OnTriggerStay(Collider other)
+    {
+        // if entered water; note that water is a plane, so the collider should be altered to allow for this.
+        if (other.gameObject.tag == "Water")
+        {
+            inWater = true;
+            rigidBody.drag = InWaterDrag;
+        }
+    }
+
+    // left water
+    private void OnTriggerExit(Collider other)
+    {
+        // if left water
+        if (other.gameObject.tag == "Water")
+        {
+            inWater = false;
+            rigidBody.drag = InAirDrag;
+        }
     }
 
     // if the player is in first person mode.
@@ -129,12 +198,15 @@ public class Player : MonoBehaviour
         // TODO: only have this work underwater
         if(inWater)
         {
-            if (Input.GetAxisRaw("Jump") != 0.0F)
-                rigidBody.AddForce(transform.up * Input.GetAxisRaw("Jump") * jumpForce * Time.deltaTime, ForceMode.Impulse);
+            // if (Input.GetAxisRaw("Jump") != 0.0F)
+            //     rigidBody.AddForce(transform.up * Input.GetAxisRaw("Jump") * jumpForce * Time.deltaTime, ForceMode.Impulse);
+
+            if (Input.GetKeyDown("space"))
+                rigidBody.AddForce(transform.up * jumpForce * Time.deltaTime, ForceMode.Impulse);
         }
         else
         {
-            if (Input.GetKeyDown("space"))
+            if (Input.GetKeyDown("space") && onGround)
                 rigidBody.AddForce(transform.up * jumpForce * Time.deltaTime, ForceMode.Impulse);
         }
 
@@ -155,4 +227,5 @@ public class Player : MonoBehaviour
             Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
             SwitchCamera();
     }
+
 }
