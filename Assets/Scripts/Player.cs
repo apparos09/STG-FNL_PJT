@@ -263,9 +263,38 @@ public class Player : MonoBehaviour
         }
 
         // switches the camera
-        if (Input.GetKeyDown(KeyCode.Alpha0) || Input.GetKeyDown(KeyCode.Keypad0) ||
-            Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+        // if (Input.GetKeyDown(KeyCode.Alpha0) || Input.GetKeyDown(KeyCode.Keypad0) ||
+        //     Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+        //     SwitchCamera();
+
+        // switch camera.
+        if(Input.GetKeyDown(KeyCode.V))
             SwitchCamera();
+
+        // change water levels
+        {
+            // corresponds with the number keys.
+            if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)) // Level 1
+            {
+                gameManager.SetWaterLevels(1);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2)) // Level 1
+            {
+                gameManager.SetWaterLevels(2);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3)) // Level 1
+            {
+                gameManager.SetWaterLevels(3);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4)) // Level 1
+            {
+                gameManager.SetWaterLevels(4);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha5) || Input.GetKeyDown(KeyCode.Keypad5)) // Level 1
+            {
+                gameManager.SetWaterLevels(5);
+            }
+        }
     }
 
 }
