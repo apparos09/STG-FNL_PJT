@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
+
 
 // the player, which is the controlled by the user of the sim.
 public class Player : MonoBehaviour
@@ -24,10 +26,10 @@ public class Player : MonoBehaviour
     [Header("Movement")]
 
     // movement force
-    public Vector2 moveSpeedXZ = new Vector2(1200.0F, 1200.0F);
+    public Vector2 moveSpeedXZ = new Vector2(35.0F, 35.0F);
 
     // maximum speed.
-    public float maxMoveSpeed = 250.0F;
+    public float maxMoveSpeed = 45.0F;
 
     // if the move speed should be limited.
     public bool limitMoveSpeed = true;
@@ -36,7 +38,7 @@ public class Player : MonoBehaviour
     public Vector2 turnSpeedXY = new Vector2(90.0F, 90.0F);
 
     // the force for jumping.
-    public float jumpForce = 450.0F;
+    public float jumpForce = 400.0F;
 
     // becomes 'true' if the player is in water.
     public bool inWater = false;
@@ -47,6 +49,15 @@ public class Player : MonoBehaviour
 
     // becomes 'true' if the player hits the ground.
     public bool onGround = false;
+
+
+    // [Header("Post Processing")]
+    // // if 'true', post processing is enabled.
+    // public bool usePostProcessing = true;
+
+
+    // post processing volume for being in the water.
+    // public PostProcessVolume inWaterPostProcess;
 
     // Start is called before the first frame update
     void Start()
@@ -64,7 +75,7 @@ public class Player : MonoBehaviour
 
         // gets hte first person camera if not set.
         if (firstPersonCamera == null)
-            firstPersonCamera = GetComponentInChildren<Camera>();
+            firstPersonCamera = GetComponentInChildren<Camera>(true);
 
         // checks what camera should be enabled.
         if(startInFirstPerson)
@@ -78,6 +89,15 @@ public class Player : MonoBehaviour
             firstPersonCamera.enabled = false;
         }
 
+
+        // finds the post processing volume for the scene.
+        // this should not be used if more than one volume is added.
+        // if (inWaterPostProcess == null)
+        //     inWaterPostProcess = FindObjectOfType<PostProcessVolume>(true);
+        // 
+        // // disables this post process.
+        // if (inWaterPostProcess != null)
+        //     inWaterPostProcess.enabled = false;
 
     }
 
@@ -101,22 +121,23 @@ public class Player : MonoBehaviour
     // on exiting a collider
     private void OnCollisionExit(Collision collision)
     {
-        // checs if the player has left the ground
+        // chekcs if the player has left the ground
         if (onGround && (collision.gameObject.tag == "Stage" || collision.gameObject.tag == "Untagged"))
             onGround = false;
     }
 
 
     // enter water
-    private void OnTriggerEnter(Collider other)
-    {
-        // if entered water
-        if (other.gameObject.tag == "Water")
-        {
-            inWater = true;
-            rigidBody.drag = InWaterDrag;
-        }
-    }
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     // if entered water
+    //     if (other.gameObject.tag == "Water")
+    //     {
+    //         inWater = true;
+    //         rigidBody.drag = InWaterDrag;
+    // 
+    //     }
+    // }
 
     // entered water.
     private void OnTriggerStay(Collider other)
@@ -126,6 +147,10 @@ public class Player : MonoBehaviour
         {
             inWater = true;
             rigidBody.drag = InWaterDrag;
+            
+            // enables the post processing effects.
+            // if (inWaterPostProcess != null)
+            //     inWaterPostProcess.enabled = true;
         }
     }
 
@@ -137,6 +162,10 @@ public class Player : MonoBehaviour
         {
             inWater = false;
             rigidBody.drag = InAirDrag;
+
+            // disables the post processing effects.
+            // if (inWaterPostProcess != null)
+            //     inWaterPostProcess.enabled = false;
         }
     }
 
@@ -174,11 +203,11 @@ public class Player : MonoBehaviour
         // MOVEMENT //
         // move forward or backwards
         if (Input.GetAxisRaw("Movement Z") != 0.0F)
-            rigidBody.AddForce(transform.forward * Input.GetAxisRaw("Movement Z") * moveSpeedXZ.y * Time.deltaTime);
+            rigidBody.AddForce(transform.forward * Input.GetAxisRaw("Movement Z") * moveSpeedXZ.y * Time.deltaTime, ForceMode.Impulse);
 
         // move left or right
         if (Input.GetAxisRaw("Movement X") != 0.0F)
-            rigidBody.AddForce(transform.right * Input.GetAxisRaw("Movement X") * moveSpeedXZ.x * Time.deltaTime);
+            rigidBody.AddForce(transform.right * Input.GetAxisRaw("Movement X") * moveSpeedXZ.x * Time.deltaTime, ForceMode.Impulse);
 
         // ROTATION //
         // rotation/movement force (left and right)
@@ -214,12 +243,17 @@ public class Player : MonoBehaviour
         // if hte movement should be limited.
         if (limitMoveSpeed)
         {
-            // gets the current speed.
-            float currSpeed = rigidBody.velocity.magnitude;
+            // clamps the maximum move speed.
+            if (Mathf.Abs(rigidBody.velocity.magnitude) > maxMoveSpeed)
+                rigidBody.velocity = Vector3.ClampMagnitude(rigidBody.velocity, maxMoveSpeed);
 
-            // if the maximum move speed has been passed.
-            if (Mathf.Abs(currSpeed) > maxMoveSpeed)
-                rigidBody.velocity = rigidBody.velocity.normalized * maxMoveSpeed;
+            // gets the current speed.
+            // float currSpeed = rigidBody.velocity.magnitude;
+            // 
+            // // if the maximum move speed has been passed.
+            // if (Mathf.Abs(currSpeed) > maxMoveSpeed)
+            //     rigidBody.velocity = rigidBody.velocity.normalized * maxMoveSpeed;
+            // 
         }
 
         // switches the camera
