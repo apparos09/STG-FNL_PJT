@@ -7,8 +7,14 @@ using UnityEngine.Rendering.PostProcessing;
 // the player, which is the controlled by the user of the sim.
 public class Player : MonoBehaviour
 {
+    // the model for the player.
+    // public GameObject model;
+
     // the player's rigidbody.
     public Rigidbody rigidBody;
+
+    // the game manager
+    GameplayManager gameManager;
 
     // view
     [Header("View")]
@@ -38,14 +44,10 @@ public class Player : MonoBehaviour
     public Vector2 turnSpeedXY = new Vector2(90.0F, 90.0F);
 
     // the force for jumping.
-    public float jumpForce = 400.0F;
+    public float jumpForce = 15.0F;
 
     // becomes 'true' if the player is in water.
     public bool inWater = false;
-
-    // changes mass if leaving water.
-    public float InAirDrag = 0.0F;
-    public float InWaterDrag = 1.5F;
 
     // becomes 'true' if the player hits the ground.
     public bool onGround = false;
@@ -62,12 +64,16 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // if (model == null)
+        //     model = GetComponentInChildren<GameObject>();
+
         // grabs the rigidbody if it's not set.
         if (rigidBody == null)
             rigidBody = FindObjectOfType<Rigidbody>();
 
-        InAirDrag = rigidBody.drag;
-        InWaterDrag = (rigidBody.drag + 1) * InWaterDrag; // does a plus one to account for a drag of 0. 
+        // finds the game manager
+        if (gameManager == null)
+            gameManager = FindObjectOfType<GameplayManager>();
 
         // if third person camera not set.
         if(thirdPersonCamera == null)
@@ -143,10 +149,10 @@ public class Player : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         // if entered water; note that water is a plane, so the collider should be altered to allow for this.
-        if (other.gameObject.tag == "Water")
+        if (other.gameObject.tag == "Water" && inWater == false)
         {
             inWater = true;
-            rigidBody.drag = InWaterDrag;
+            gameManager.ApplyWaterDrag(rigidBody);
             
             // enables the post processing effects.
             // if (inWaterPostProcess != null)
@@ -161,7 +167,7 @@ public class Player : MonoBehaviour
         if (other.gameObject.tag == "Water")
         {
             inWater = false;
-            rigidBody.drag = InAirDrag;
+            gameManager.RemoveWaterDrag(rigidBody);
 
             // disables the post processing effects.
             // if (inWaterPostProcess != null)
@@ -224,19 +230,19 @@ public class Player : MonoBehaviour
         // }
 
         // JUMP //
-        // TODO: only have this work underwater
+        // do not use delta time for this. It's not needed since force is only applied when the player first presses down.
         if(inWater)
         {
             // if (Input.GetAxisRaw("Jump") != 0.0F)
             //     rigidBody.AddForce(transform.up * Input.GetAxisRaw("Jump") * jumpForce * Time.deltaTime, ForceMode.Impulse);
 
             if (Input.GetKeyDown("space"))
-                rigidBody.AddForce(transform.up * jumpForce * Time.deltaTime, ForceMode.Impulse);
+                rigidBody.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         }
         else
         {
             if (Input.GetKeyDown("space") && onGround)
-                rigidBody.AddForce(transform.up * jumpForce * Time.deltaTime, ForceMode.Impulse);
+                rigidBody.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         }
 
 
